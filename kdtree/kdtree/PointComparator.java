@@ -9,8 +9,8 @@ public class PointComparator {
 public static boolean isX = true;
 public static Comparator<Point> orderPoints() {
 
-    Class x = new XPoint(0, 0).getClass();
-    Class y = new YPoint(0, 0).getClass();
+    Class x = new Point(0, 0).getClass();
+    Class y = new Point(0, 0).getClass();
     return (p1, p2) -> {
 
         if (isX) {

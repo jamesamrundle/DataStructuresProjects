@@ -10,52 +10,6 @@ public class KDTreeTest {
 
 
 
-    @Test
-    public void firstTest() {
-        Point xp = new XPoint(0, 0);
-        Point yp = new YPoint(0, 0);
-        Point tp = new Point(0, 0);
-
-        System.out.println(xp.getClass() + ":" + yp.getClass());
-        assertEquals(xp.getClass(), new XPoint(0, 0).getClass());
-    }
-
-
-
-@Test
-    public void testRoot(){
-        ArrayList<Point> temp = new ArrayList<>();
-        temp.add(new Point(5,5));
-        temp.add(new Point(1,2));
-        temp.add(new Point(-1,0));
-        temp.add(new Point(0,0));
-        temp.add(new Point(4,4));
-        temp.add(new Point(1,6));
-        temp.add(new Point(3,6));
-        temp.add(new Point(0,5));
-        temp.add(new Point(0,6));
-        temp.add(new Point(2,2));
-        PointComparator.isX = false;
-
-    List<Point> temp2 = new ArrayList<>();
-    temp2.add(new Point(2,3));
-    temp2.add(new Point(1,5));
-    temp2.add(new Point(4,2));
-    temp2.add(new Point(4,5));
-    temp2.add(new Point(4,4));
-    temp2.add(new Point(3,3));
-
-        KDTreePointSetX test = new KDTreePointSetX(temp);
-        KDTreePointSetX test2 = new KDTreePointSetX(temp2);
-
-        assertEquals(new XPoint(0,0).getClass(),test.root.getClass());
-//        test2.distancesPrint(new Point(0,7));
-            test2.nearest(5,4);
-            test2.nearest(5,2.5);
-            test2.nearest(5,5);
-            test.nearest(2,3);
-    }
-
 @Test public void findDistanceToLine(){
 
 
@@ -90,7 +44,7 @@ public class KDTreeTest {
 
         KDTreePointSet kTest = new KDTreePointSet(temp);
         NaivePointSet nTest = new NaivePointSet(temp);
-        kTest.distancesPrint(new Point(0,3));
+        kTest.distancesPrint(new Node(0,3));
        double dx = 0;
         double dy = 3;
         Point p1 = kTest.nearest(dx,dy);
@@ -101,7 +55,7 @@ public class KDTreeTest {
     }
 
 @Test public void bigUn() {
-    KDTreePointSetX kTest;
+    KDTreePointSet kTest;
     ArrayList<Point> kArr = new ArrayList<Point>();
 
     NaivePointSet nTest;
@@ -116,7 +70,7 @@ public class KDTreeTest {
         nArr.add(new Point(x, y));
     }
 
-    kTest = new KDTreePointSetX(kArr);
+    kTest = new KDTreePointSet(kArr);
     nTest = new NaivePointSet(nArr);
 //    kTest.nodeDistancePrint(new Point(420.391369,659.81259));
 //    kTest.distancesPrint(new Point(420.391369,659.81259));

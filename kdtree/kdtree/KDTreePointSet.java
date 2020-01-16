@@ -1,150 +1,92 @@
 package kdtree;
-import kdtree.PointSet;
+
+
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.BiFunction;
 
 public class KDTreePointSet implements PointSet {
-    Class x = new XPoint(0, 0).getClass();
-    Class y = new YPoint(0, 0).getClass();
 
-    public XPoint root;
+    public Node root;
+    public Node goal;
 
-
-    private Point findLeftBound(Point here, Point query, boolean isX){
+    private Node findLeftBound(Node here, Node query, boolean isX){
         if(here == root  ){
             if(root.x() <=query.x()) return here;
-            else return new Point(Integer.MIN_VALUE,0);
+            else return new Node(Integer.MIN_VALUE,0);
         }
         if ( isX ){
-            if(here.x() >= query.x() ) return findLeftBound(((XPoint)here).getParent(),query, ! isX);
+            if(here.x() >= query.x() ) return findLeftBound(here.getParent(),query, ! isX);
             else return  here;
         }
-        return findLeftBound(((YPoint)here).getParent(),query, ! isX);
+        return findLeftBound(here.getParent(),query, ! isX);
     }
-    private Point findRightBound(Point here, Point query, boolean isX){
+    private Node findRightBound(Node here, Node query, boolean isX){
         if(here == root  ){
             if(root.x() >=query.x()) return here;
-            else return new Point(Integer.MAX_VALUE,0);
+            else return new Node(Integer.MAX_VALUE,0);
         }
         if ( isX ){
-            if(here.x() <= query.x() ) return findRightBound(((XPoint)here).getParent(),query, ! isX);
+            if(here.x() <= query.x() ) return findRightBound(here.getParent(),query, ! isX);
             else return  here;
         }
-        return findRightBound(((YPoint)here).getParent(),query, ! isX);
+        return findRightBound(here.getParent(),query, ! isX);
     }
-    private Point findUpperBound(Point here, Point query, boolean isX){
-        if(here == root) return new Point(0,Integer.MAX_VALUE);
+    private Node findUpperBound(Node here, Node query, boolean isX){
+        if(here == root) return new Node(0,Integer.MAX_VALUE);
         if ( !isX ){
-            if(here.y() <= query.y() ) return findUpperBound(((YPoint)here).getParent(),query, ! isX);
+            if(here.y() <= query.y() ) return findUpperBound(here.getParent(),query, ! isX);
             else return  here;
         }
-        return findUpperBound(((XPoint)here).getParent(),query, ! isX);
+        return findUpperBound(here.getParent(),query, ! isX);
     }
-    private Point findLowerBound(Point here, Point query, boolean isX){
-        if(here == root) return new Point(0,Integer.MIN_VALUE);
+    private Node findLowerBound(Node here, Node query, boolean isX){
+        if(here == root) return new Node(0,Integer.MIN_VALUE);
         if ( !isX ){
-            if(here.y() >= query.y() ) return findLowerBound(((YPoint)here).getParent(),query, ! isX);
+            if(here.y() >= query.y() ) return findLowerBound(here.getParent(),query, ! isX);
             else return  here;
         }
-        return findLowerBound(((XPoint)here).getParent(),query, ! isX);
+        return findLowerBound(here.getParent(),query, ! isX);
     }
 
-    public boolean findPoint(Point here, Point query,boolean isX ){
-        if( here.x()== query.x() && here.y() == query.y() ) {
-            System.out.println("*Point :(" + here.x() + "," + here.y() + ") FOUND *");
-            return true;}
-        if( here == null) return false;
 
-        System.out.println("");
-        System.out.print("Point :(" + here.x() + "," + here.y() + "),");
-
-
-
-        Point[] choice = {null,null}; //sets ordering of which child node is traversed first
-
-        if (isX){
-            XPoint h = (XPoint)here;
-
-            if( query.x() < here.x() ){
-                choice[0] = (YPoint)h.getLeft();
-                choice[1] = (YPoint)h.getRight();
-            }
-            else{
-                choice[1] = (YPoint)h.getLeft();
-                choice[0] = (YPoint)h.getRight();
-            }
-        }
-        else{
-            YPoint h = (YPoint)here;
-
-            if( query.y() < here.y() ){
-                choice[0] = (XPoint)h.getLeft();
-                choice[1] = (XPoint)h.getRight();
-            }
-            else{
-                choice[1] = (XPoint)h.getLeft();
-                choice[0] = (XPoint)h.getRight();
-            }
-        }
-
-
-
-        return (findPoint(choice[0],query,!isX)||findPoint(choice[1],query,!isX));
-    }
-
-    public boolean findIt(Point goal){
-        return findPoint(root,goal,true);
-    }
-
-    private Point nearestPoint(Point here,Point minNode, Point query,boolean isX  ){
+    private Node nearestPoint(Node here,Node minNode,boolean isX  ){
         if( here == null ) return minNode;
-        else if(here.distanceSquaredTo(query) < minNode.distanceSquaredTo(query)){
+        else if(here.distanceSquaredTo(goal) < minNode.distanceSquaredTo(goal)){
             minNode = here;
         }
 
-        Point[] choice = {null,null}; //sets ordering of which child node is traversed first
+        Node[] choice = {null,null}; //sets ordering of which child node is traversed first
 
-        if (isX){
-            XPoint h = (XPoint)here;
+        int compare;
+        if (isX) {
+            compare = Double.compare(goal.x(), here.x());
+        } else compare = Double.compare(goal.y(), here.y() );
 
-            if( query.x() < here.x() ){
-                choice[0] = (YPoint)h.getLeft();
-                choice[1] = (YPoint)h.getRight();
+            if( compare < 0){
+                choice[0] = here.getLeft();
+                choice[1] = here.getRight();
             }
             else{
-                choice[1] = (YPoint)h.getLeft();
-                choice[0] = (YPoint)h.getRight();
+                choice[1] = here.getLeft();
+                choice[0] = here.getRight();
             }
-        }
-        else{
-            YPoint h = (YPoint)here;
 
-            if( query.y() < here.y() ){
-                choice[0] = (XPoint)h.getLeft();
-                choice[1] = (XPoint)h.getRight();
-            }
-            else{
-                choice[1] = (XPoint)h.getLeft();
-                choice[0] = (XPoint)h.getRight();
-            }
-        }
 
-        Point A = minNode;
-        Point B = minNode;
-        double minNodeDistance = Math.sqrt(minNode.distanceSquaredTo(query));
+
+        Node A = minNode;
+        Node B = minNode;
+        double minNodeDistance = (minNode.distanceSquaredTo(goal));
         double AnodeDistance = minNodeDistance;
         double BnodeDistance = minNodeDistance;
-        
+
         if(choice[0]!= null){
-            A = nearestPoint(choice[0],minNode,query,!isX);
-            AnodeDistance = Math.sqrt(A.distanceSquaredTo(query));
+            A = nearestPoint(choice[0],minNode,!isX);
+            AnodeDistance = (A.distanceSquaredTo(goal));
         }
 
-        if(bestPossibleDistance(here,query,isX) < minNodeDistance){
+        if(bestPossibleDistance(here,isX) < minNodeDistance){
             if(choice[1] != null) {
-                B = nearestPoint(choice[1], minNode, query, !isX);
-                BnodeDistance = Math.sqrt(B.distanceSquaredTo(query));
+                B = nearestPoint(choice[1], minNode, !isX);
+                BnodeDistance = (B.distanceSquaredTo(goal));
             }
         }
         if ((BnodeDistance < minNodeDistance &&
@@ -155,28 +97,28 @@ public class KDTreePointSet implements PointSet {
 
         return minNode;
     }
-    public double bestPossibleDistance(Point p,Point goal,boolean isX){
+    public double bestPossibleDistance(Node p,boolean isX){
         if( p == null) return Integer.MAX_VALUE;
-        Point bound1;
-        Point bound2;
+        Node bound1;
+        Node bound2;
         if(isX){
-            bound1 = new Point(p.x(),findUpperBound(p,p,isX).y());
-            bound2 = new Point(p.x(),findLowerBound(p,p,isX).y());
+            bound1 = new Node(p.x(),findUpperBound(p,p,isX).y());
+            bound2 = new Node(p.x(),findLowerBound(p,p,isX).y());
             if(bound1.x() == bound2.x() && bound1.y() == bound2.y()  ){
                 if(goal.x() > p.x()){
-                    bound1 = new Point(p.x(),findLeftBound(p,p,isX).y());
+                    bound1 = new Node(p.x(),findLeftBound(p,p,isX).y());
                 }
-                else bound1 = new Point(p.x(),findRightBound(p,p,isX).y());
+                else bound1 = new Node(p.x(),findRightBound(p,p,isX).y());
             }
         }
         else{
-            bound1 = new Point(findRightBound(p,p,isX).x(),p.y());
-            bound2 = new Point(findLeftBound(p,p,isX).x(),p.y());
+            bound1 = new Node(findRightBound(p,p,isX).x(),p.y());
+            bound2 = new Node(findLeftBound(p,p,isX).x(),p.y());
             if(bound1.x() == bound2.x() && bound1.y() == bound2.y()  ){
                 if(goal.y() > p.y()){
-                    bound1 = new Point(p.x(),findLowerBound(p,p,isX).y());
+                    bound1 = new Node(p.x(),findLowerBound(p,p,isX).y());
                 }
-                else bound1 = new Point(p.x(),findUpperBound(p,p,isX).y());
+                else bound1 = new Node(p.x(),findUpperBound(p,p,isX).y());
             }
         }
 
@@ -201,149 +143,64 @@ public class KDTreePointSet implements PointSet {
 //        System.out.println(">>"+x+":"+y);
         double dx = x - goal.x();
         double dy = y - goal.y();
-        double dist = Math.sqrt(dx*dx + dy*dy);
+        double dist = (dx*dx + dy*dy);
         return dist;
 
     }
 
-    public BiFunction<Point, Point, Point> pointReturner =
-        (p,c) -> { if(p.getClass() == x ){
-            return new YPoint(c.x(),c.y());
-        } else{
-            return new XPoint(c.x(),c.y());
-        }
-    };
 
-    public void nodeAdder(Point parent,Point newNode){
+
+    public void nodeAdder(Node parent,Node newNode, boolean isX){
         int compare;
-        if (parent.getClass() == x) {
-            XPoint here = (XPoint) parent;
-            Point hl = here.getLeft();
-            Point hr = here.getRight();
+        Node here = parent;
+        Node hl = here.getLeft();
+        Node hr = here.getRight();
+        if (isX) {
             compare = Double.compare(newNode.x(), here.x());
+        }
+        else compare = Double.compare(newNode.y(), here.y());
 
             if (compare < 0) {
                 if (hl == null) {
-                    YPoint newY = (YPoint)pointReturner.apply(parent,newNode);
-                    newY.setParent(here);
-                    here.setLeft(newY);
+                    newNode.setParent(here);
+                    here.setLeft(newNode);
                     return;
                 } else {
-                    nodeAdder(hl, newNode);
+                    nodeAdder(hl, newNode,!isX);
                 }
             } else {
                 if (hr == null) {
-                    YPoint newY = (YPoint)pointReturner.apply(parent,newNode);
-                    newY.setParent(here);
-                    here.setRight(newY);
+                    newNode.setParent(here);
+                    here.setRight(newNode);
                     return;
                 } else {
-                    nodeAdder(hr, newNode);
+                    nodeAdder(hr, newNode,!isX);
                 }
             }
 
 
-        } else {
-            YPoint here = (YPoint) parent;
-            Point hl = here.getLeft();
-            Point hr = here.getRight();
-            compare = Double.compare(newNode.y(), here.y());
 
-            if (compare < 0) {
-                if (hl == null) {
-                    XPoint newX = (XPoint)pointReturner.apply(parent,newNode);
-                    newX.setParent(here);
-                    here.setLeft(newX);
-
-                    return;
-                } else {
-                    nodeAdder(hl, newNode);
-                }
-            } else {
-                if (hr == null) {
-                    XPoint newX =  (XPoint)pointReturner.apply(parent,newNode);
-                    newX.setParent(here);
-                    here.setRight(newX);
-                    return;
-                } else {
-                    nodeAdder(hr, newNode);
-                }
-            }
-        }
-    }
-
-    private void buildTree(Point parent,Point newNode){
-
-        Point nextNode ;
-        int compare ;
-        if(parent.getClass() == new XPoint(0,0).getClass()){
-            XPoint here = (XPoint)parent;
-            compare = Double.compare(newNode.x(),here.x());
-
-            if ( compare < 0){
-                if ( here.getLeft() == null ) {
-                    YPoint newY = getYPoint(newNode);
-                    newY.setParent(here);
-                    here.setLeft(newY);
-                    return;
-                }
-                else{ buildTree(here.getLeft(),newNode);}
-            }
-            else{
-                if ( here.getRight() == null ) {
-                    YPoint newY = getYPoint(newNode);
-                    newY.setParent(here);
-                    here.setRight(newY);
-                    return;
-                }
-                else{ buildTree(here.getRight(),newNode);}
             }
 
 
-        }else{
-            YPoint here = (YPoint)parent;
-            compare = Double.compare(newNode.y(),here.y());
 
-            if ( compare < 0){
-                if ( here.getLeft() == null ) {
-                    XPoint newX = getXPoint(newNode);
-                    newX.setParent(here);
-                    here.setLeft(newX);
-
-                    return;
-                }
-                else{ buildTree(here.getLeft(),newNode);}
-            }
-            else{
-                if ( here.getRight() == null ) {
-                    XPoint newX = getXPoint(newNode);
-                    newX.setParent(here);
-                    here.setRight(newX);
-                    return;
-                }
-                else{ buildTree(here.getRight(),newNode);}
-            }
-        }
-
-    }
-
-    private void printTree(Point p){
+    private void printTree(Point p,boolean isX){
         System.out.print("("+p.x()+","+p.y()+"),");
+        Node t = (Node)p;
+        if( isX) {
 
-        if( p.getClass() == new YPoint(0,0).getClass()) {
-            YPoint t = (YPoint)p;
-            if (t.getLeft() != null) printTree((XPoint) t.getLeft());
-            if (t.getRight() != null) printTree((XPoint) t.getRight());
+            if (t.getLeft() != null) printTree (t.getLeft(),!isX);
+            if (t.getRight() != null) printTree(t.getRight(),!isX);
         }
         else{
-            XPoint t = (XPoint)p;
-            if (t.getLeft() != null) printTree((YPoint) t.getLeft());
-            if (t.getRight() != null) printTree((YPoint) t.getRight());
+
+            if (t.getLeft() != null) printTree( t.getLeft(),!isX);
+            if (t.getRight() != null) printTree(t.getRight(),!isX);
         }
     }
 
-    private void printTreeWBounds(Point p,boolean isX){
-        if(p == root) printTree(p);
+    private void printTreeWBounds(Node p,boolean isX){
+        if(p == root) printTree(p,isX);
 
 
 
@@ -352,86 +209,89 @@ public class KDTreePointSet implements PointSet {
         System.out.print("Point :(" + p.x() + "," + p.y() + "),");
         System.out.printf("With bounds Left:%.1f Right:%.1f Up:%.1f,Down:%.1f \n", findLeftBound(p, p,isX).x(), findRightBound(p, p,isX).x(), findUpperBound(p, p,isX).y(), findLowerBound(p, p,isX).y());
 
-        if( p.getClass() == new YPoint(0,0).getClass()) {
-            YPoint t = (YPoint)p;
-            if (t.getLeft() != null) printTreeWBounds((XPoint) t.getLeft(),!isX);
-            if (t.getRight() != null) printTreeWBounds((XPoint) t.getRight(),! isX);
+        if( p.getClass() == new Node(0,0).getClass()) {
+            Node t = p;
+            if (t.getLeft() != null) printTreeWBounds( t.getLeft(),!isX);
+            if (t.getRight() != null) printTreeWBounds( t.getRight(),! isX);
         }
         else{
-            XPoint t = (XPoint)p;
-            if (t.getLeft() != null) printTreeWBounds((YPoint) t.getLeft(),!isX);
-            if (t.getRight() != null) printTreeWBounds((YPoint) t.getRight(),!isX);
+            Node t = p;
+            if (t.getLeft() != null) printTreeWBounds( t.getLeft(),!isX);
+            if (t.getRight() != null) printTreeWBounds( t.getRight(),!isX);
         }
     }
 
-    private void printTreeWDistances(Point p,Point goal, boolean isX){
-        if(p == root) printTree(p);
+    private void printTreeWDistances(Node p, boolean isX){
+        if(p == root) printTree(p,isX);
 
 
 
 
         System.out.println("");
         System.out.print("Point :(" + p.x() + "," + p.y() + "),");
-        System.out.printf("With shortest possible distance of : "+bestPossibleDistance(p,goal,isX));
+        System.out.printf("With shortest possible distance of : "+bestPossibleDistance(p,isX));
+        Node t = p;
+        if( !isX) {
 
-        if( p.getClass() == new YPoint(0,0).getClass()) {
-            YPoint t = (YPoint)p;
-            if (t.getLeft() != null) printTreeWDistances((XPoint) t.getLeft(),goal,!isX);
-            if (t.getRight() != null) printTreeWDistances((XPoint) t.getRight(),goal,!isX);
+            if (t.getLeft() != null) printTreeWDistances( t.getLeft(),!isX);
+            if (t.getRight() != null) printTreeWDistances( t.getRight(),!isX);
         }
         else{
-            XPoint t = (XPoint)p;
-            if (t.getLeft() != null) printTreeWDistances((YPoint) t.getLeft(),goal,!isX);
-            if (t.getRight() != null) printTreeWDistances((YPoint) t.getRight(),goal,!isX);
+
+            if (t.getLeft() != null) printTreeWDistances( t.getLeft(),!isX);
+            if (t.getRight() != null) printTreeWDistances( t.getRight(),!isX);
         }
     }
-    public void distancesPrint(Point goal){
-        printTreeWDistances(root,goal,true);
+    public void distancesPrint(Node goal){
+        this.goal = goal;
+        printTreeWDistances(root,true);
     }
     public void boundsPrint(){
         printTreeWBounds(root,true);
     }
     public void print(){
-        printTree(root);
-    }
-    private XPoint getXPoint(Point point){
-        return new XPoint(point.x(),point.y());
-    }
-    private YPoint getYPoint(Point point){
-        return new YPoint(point.x(),point.y());
+        printTree(root,true);
     }
 
 
-    private void printNodeDistances(Point p,Point goal){
-        if(p == root) printTree(p);
+
+    private void printNodeDistances(Point p,Point goal,boolean isX){
+        if(p == root) printTree(p,true);
 
 
 
 
         System.out.println("");
         System.out.print("Point :(" + p.x() + "," + p.y() + "),");
-        System.out.printf("With shortest possible distance of : "+Math.sqrt(p.distanceSquaredTo(goal)));
+        System.out.printf("With shortest possible distance of : "+(p.distanceSquaredTo(goal)));
+            Node t = (Node)p;
+        if( isX) {
 
-        if( p.getClass() == new YPoint(0,0).getClass()) {
-            YPoint t = (YPoint)p;
-            if (t.getLeft() != null) printNodeDistances((XPoint) t.getLeft(),goal);
-            if (t.getRight() != null) printNodeDistances((XPoint) t.getRight(),goal);
+            if (t.getLeft() != null) printNodeDistances(t.getLeft(),goal, !isX);
+            if (t.getRight() != null) printNodeDistances( t.getRight(),goal,!isX);
         }
         else{
-            XPoint t = (XPoint)p;
-            if (t.getLeft() != null) printNodeDistances((YPoint) t.getLeft(),goal);
-            if (t.getRight() != null) printNodeDistances((YPoint) t.getRight(),goal);
+
+            if (t.getLeft() != null) printNodeDistances( t.getLeft(),goal,!isX);
+            if (t.getRight() != null) printNodeDistances(t.getRight(),goal,!isX);
         }
     }
     public void nodeDistancePrint(Point goal){
-        printNodeDistances(root,goal);
+        printNodeDistances(root,goal,true);
     }
 
     public KDTreePointSet(List<Point> points) {
+        Point p ;
         for(int i = 0;i<points.size();i++) {
-            if (i == 0)   root = getXPoint(points.get(0));
+
+            p = points.get(i);
+            Node t = new Node(p.x(),p.y());
+            //t.setId( p.id);
+
+
+            if (i == 0)   root = t ;
             else{
-                nodeAdder(root,points.get(i));
+                nodeAdder(root,t,true);
 //                buildTree(root,points.get(i));
             }
         }
@@ -445,7 +305,9 @@ public class KDTreePointSet implements PointSet {
      */
     @Override
     public Point nearest(double x, double y) {
-        Point t = nearestPoint(root,root,new Point(x,y),true);
+        goal = new Node(x,y);
+        Point t = nearestPoint(root,root,true);
+//        Point t = nearestPoint(root,root,new Node(x,y),true);
 //        System.out.println("*("+t.x()+","+t.y()+")*");
         return t;
     }
